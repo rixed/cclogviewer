@@ -27,11 +27,16 @@ func ProcessUserMessage(msg map[string]interface{}) string {
 				var toolContent string
 				if contentVal, ok := contentItem["content"].(string); ok {
 					toolContent = contentVal
-				} else if contentArray, ok := contentItem["content"].([]interface{}); ok && len(contentArray) > 0 {
-					// Handle array content (like from Task tool)
-					if textContent, ok := contentArray[0].(map[string]interface{}); ok {
-						toolContent = utils.ExtractString(textContent, "text")
+				} else if contentArray, ok := contentItem["content"].([]interface{}); ok {
+					// Array content (Task tool, MCP tools): join the text blocks
+					var texts []string
+					for _, block := range contentArray {
+						if textContent, ok := block.(map[string]interface{}); ok &&
+							utils.ExtractString(textContent, "type") == constants.ContentTypeText {
+							texts = append(texts, utils.ExtractString(textContent, "text"))
+						}
 					}
+					toolContent = strings.Join(texts, "\n")
 				}
 				return toolContent
 			}

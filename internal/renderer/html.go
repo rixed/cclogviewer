@@ -9,7 +9,6 @@ import (
 	"html"
 	"html/template"
 	"os"
-	"regexp"
 	"strings"
 )
 
@@ -47,16 +46,8 @@ func GenerateHTML(entries []*models.ProcessedEntry, outputFile string, debugMode
 			return result
 		},
 		"formatContent": func(content string) template.HTML {
-			// Check if content is enclosed in square brackets
-			trimmed := strings.TrimSpace(content)
-			if strings.HasPrefix(trimmed, "[") && strings.HasSuffix(trimmed, "]") {
-				// Check if it's an ANSI escape sequence
-				if !regexp.MustCompile(`\x1b\[\d+m`).MatchString(content) {
-					// Regular bracketed message (like [Request interrupted by user])
-					stripped := trimmed[1 : len(trimmed)-1]
-					// Escape the content and wrap in styled span
-					return template.HTML(fmt.Sprintf(`<span style="color: #999; font-style: italic;">%s</span>`, html.EscapeString(stripped)))
-				}
+			if notice, ok := formatNotice(content); ok {
+				return notice
 			}
 
 			// Convert ANSI escape codes to HTML (this handles escaping internally)
@@ -67,6 +58,7 @@ func GenerateHTML(entries []*models.ProcessedEntry, outputFile string, debugMode
 
 			return template.HTML(content)
 		},
+		"formatToolResult": formatToolResult,
 		"shortUUID": func(uuid string) string {
 			// Return first N characters of UUID for brevity
 			if len(uuid) >= constants.ShortUUIDLength {

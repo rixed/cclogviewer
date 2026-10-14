@@ -169,6 +169,15 @@ h1 {
     white-space: pre-wrap;
 }
 
+.tool-result-text,
+.tool-result-json {
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.9em;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
 .tool-result.error {
     background: #ffebee;
     color: #c62828;
